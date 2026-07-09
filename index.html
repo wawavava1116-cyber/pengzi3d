@@ -96,74 +96,15 @@
     .cube-mark {
       position: relative;
       width: 180px;
-      height: 156px;
+      height: 135px;
     }
-    .cube-group {
-      position: absolute;
-      left: 16px;
-      top: 16px;
-      width: 148px;
-      height: 92px;
-      animation: blockGroupFlip 1.12s steps(1, end) infinite;
-    }
-    .loader-cube {
-      position: absolute;
-      width: 68px;
-      height: 68px;
-      transform-origin: 50% 50%;
-      will-change: transform;
-    }
-    .loader-cube.block-a {
-      left: 0;
-      top: 20px;
-      z-index: 2;
-      animation: blockAPosition 1.12s steps(1, end) infinite, blockBreathe 1.12s ease-in-out infinite;
-    }
-    .loader-cube.block-b {
-      left: 58px;
-      top: 20px;
-      z-index: 2;
-      animation: blockBPosition 1.12s steps(1, end) infinite, blockBreathe 1.12s ease-in-out infinite;
-    }
-    .cube-face {
-      position: absolute;
+    .loader-gif {
+      width: 180px;
+      height: 135px;
       display: block;
-    }
-    .cube-face.top {
-      left: 0;
-      top: 0;
-      width: 68px;
-      height: 40px;
-      background: #ffd84d;
-      clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
-    }
-    .cube-face.left {
-      left: 0;
-      top: 20px;
-      width: 34px;
-      height: 46px;
-      background: #e9a526;
-      clip-path: polygon(0 0, 100% 41%, 100% 100%, 0 59%);
-    }
-    .cube-face.right {
-      left: 34px;
-      top: 20px;
-      width: 34px;
-      height: 46px;
-      background: #c87422;
-      clip-path: polygon(0 41%, 100% 0, 100% 59%, 0 100%);
-    }
-    .shadow {
-      position: absolute;
-      left: 35px;
-      bottom: 4px;
-      width: 112px;
-      height: 42px;
-      background: rgba(0,0,0,.34);
-      clip-path: polygon(0 42%, 32% 0, 50% 22%, 68% 0, 100% 42%, 68% 84%, 50% 62%, 32% 84%);
-      transform: skewX(-34deg) rotate(-1deg);
-      opacity: .72;
-      animation: shadowPulse 1.12s ease-in-out infinite;
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
     }
     .loader-text {
       min-width: 260px;
@@ -188,53 +129,13 @@
       background: #f0a126;
       transition: width .16s ease;
     }
-    @keyframes blockGroupFlip {
-      0%, 49.99% {
-        width: 148px;
-        height: 92px;
-      }
-      50%, 100% {
-        width: 92px;
-        height: 148px;
-      }
-    }
-    @keyframes blockAPosition {
-      0%, 49.99% { left: 0; top: 20px; z-index: 2; }
-      50%, 100% { left: 29px; top: 0; z-index: 1; }
-    }
-    @keyframes blockBPosition {
-      0%, 49.99% { left: 58px; top: 20px; z-index: 2; }
-      50%, 100% { left: 29px; top: 58px; z-index: 3; }
-    }
-    @keyframes blockBreathe {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      24% { transform: translate(0, -5px) scale(1.02); }
-      50% { transform: translate(0, 0) scale(1); }
-      74% { transform: translate(0, -5px) scale(1.02); }
-    }
-    @keyframes shadowPulse {
-      0%, 100% {
-        transform: skewX(-34deg) rotate(-1deg) scaleX(1) scaleY(.92);
-        opacity: .42;
-        clip-path: polygon(0 42%, 32% 0, 50% 22%, 68% 0, 100% 42%, 68% 84%, 50% 62%, 32% 84%);
-      }
-      50% {
-        transform: skewX(-34deg) rotate(90deg) scaleX(.92) scaleY(1);
-        opacity: .34;
-        clip-path: polygon(0 42%, 32% 0, 50% 22%, 68% 0, 100% 42%, 68% 84%, 50% 62%, 32% 84%);
-      }
-    }
   </style>
 </head>
 <body>
   <div id="loader" class="loader">
     <div class="loader-inner">
       <div class="cube-mark" aria-hidden="true">
-        <div class="cube-group">
-          <div class="loader-cube block-a"><span class="cube-face top"></span><span class="cube-face left"></span><span class="cube-face right"></span></div>
-          <div class="loader-cube block-b"><span class="cube-face top"></span><span class="cube-face left"></span><span class="cube-face right"></span></div>
-        </div>
-        <div class="shadow"></div>
+        <img class="loader-gif" src="loading-blocks-transparent.gif" alt="">
       </div>
       <div>
         <div id="loaderText" class="loader-text">(0KB/0KB)0%</div>
