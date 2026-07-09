@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Steel Structure 3D Preview</title>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+      touch-action: none;
+      background: #202423;
+      font-family: Arial, sans-serif;
+    }
+    model-viewer {
+      width: 100vw;
+      height: 100vh;
+      background: transparent;
+      touch-action: none;
+      --poster-color: transparent;
+    }
+    .camera-button {
+      position: fixed;
+      left: 14px;
+      top: 14px;
+      z-index: 5;
+      width: 46px;
+      height: 46px;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(0,0,0,.62);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,.28);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .camera-button:active { transform: scale(.96); background: rgba(0,0,0,.78); }
+    .camera-button svg { width: 25px; height: 25px; display: block; }
+    .tip {
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      padding: 9px 12px;
+      color: #fff;
+      background: rgba(0,0,0,.45);
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.35;
+      pointer-events: none;
+    }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 64px;
+      z-index: 6;
+      transform: translateX(-50%);
+      padding: 8px 12px;
+      color: #fff;
+      background: rgba(0,0,0,.68);
+      border-radius: 999px;
+      font-size: 13px;
+      opacity: 0;
+      transition: opacity .2s ease;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <button id="captureButton" class="camera-button" type="button" aria-label="Save transparent PNG" title="Save transparent PNG">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7.7 6H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3.7L14.5 4Z"/><circle cx="12" cy="13" r="3.5"/></svg>
+  </button>
+
+  <model-viewer
+    id="viewer"
+    src="steel_structure_cloud_view_lowpoly_draco.glb"
+    camera-controls
+    auto-rotate
+    rotation-per-second="18deg"
+    interaction-prompt="none"
+    disable-pan
+    shadow-intensity="0"
+    exposure="1.18"
+    environment-image="neutral"
+    camera-orbit="45deg 65deg auto"
+    min-camera-orbit="auto 0deg auto"
+    max-camera-orbit="auto 180deg auto"
+    field-of-view="28deg">
+  </model-viewer>
+
+  <div class="tip">拖动旋转 / 双指缩放。点击左上角相机保存透明背景 PNG。</div>
+  <div id="toast" class="toast">正在生成图片...</div>
+
+  <script>
+    const viewer = document.querySelector('#viewer');
+    const button = document.querySelector('#captureButton');
+    const toast = document.querySelector('#toast');
+    let userInteracted = false;
+
+    const showToast = (text) => {
+      toast.textContent = text;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1800);
+    };
+
+    const stopAutoRotate = () => {
+      if (!userInteracted) {
+        viewer.removeAttribute('auto-rotate');
+        userInteracted = true;
+      }
+    };
+
+    ['pointerdown', 'touchstart', 'mousedown', 'wheel'].forEach((eventName) => {
+      viewer.addEventListener(eventName, stopAutoRotate, { passive: true });
+    });
+
+    ['touchmove', 'gesturestart', 'gesturechange'].forEach((eventName) => {
+      document.addEventListener(eventName, (event) => event.preventDefault(), { passive: false });
+    });
+
+    const improveMaterials = async () => {
+      await customElements.whenDefined('model-viewer');
+      await viewer.updateComplete;
+      const model = viewer.model;
+      if (!model || !model.materials) return;
+      for (const material of model.materials) {
+        const pbr = material.pbrMetallicRoughness;
+        if (!pbr) continue;
+        pbr.setMetallicFactor?.(0.92);
+        pbr.setRoughnessFactor?.(0.23);
+      }
+    };
+
+    const downloadDataUrl = (dataUrl) => {
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = 'steel_structure_transparent.png';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    };
+
+    const captureTransparentPng = async () => {
+      showToast('正在生成 PNG...');
+      const oldBg = viewer.style.background;
+      viewer.style.background = 'transparent';
+      await viewer.updateComplete;
+      const oldWidth = viewer.style.width;
+      const oldHeight = viewer.style.height;
+      viewer.style.width = '10000px';
+      viewer.style.height = '6500px';
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      try {
+        const blob = await viewer.toBlob({ mimeType: 'image/png', idealAspect: true });
+        const reader = new FileReader();
+        reader.onload = () => {
+          downloadDataUrl(reader.result);
+          showToast('PNG 已保存');
+        };
+        reader.readAsDataURL(blob);
+      } catch (error) {
+        console.error(error);
+        showToast('图片生成失败');
+      } finally {
+        viewer.style.width = oldWidth;
+        viewer.style.height = oldHeight;
+        viewer.style.background = oldBg;
+      }
+    };
+
+    button.addEventListener('click', captureTransparentPng);
+    viewer.addEventListener('load', improveMaterials);
+  </script>
+</body>
+</html>
