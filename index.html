@@ -72,16 +72,130 @@
       white-space: nowrap;
     }
     .toast.show { opacity: 1; }
+    .loader {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: grid;
+      place-items: center;
+      background: #fff;
+      color: #1f2933;
+      transition: opacity .35s ease, visibility .35s ease;
+    }
+    .loader.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .loader-inner {
+      display: grid;
+      justify-items: center;
+      gap: 26px;
+      transform: translateY(-12px);
+    }
+    .cube-mark {
+      position: relative;
+      width: 156px;
+      height: 118px;
+      perspective: 620px;
+    }
+    .cube-row {
+      position: absolute;
+      left: 18px;
+      top: 18px;
+      width: 116px;
+      height: 58px;
+      transform-style: preserve-3d;
+      animation: cubeSpin 1.45s ease-in-out infinite alternate;
+      transform-origin: 58px 29px;
+    }
+    .iso-cube {
+      position: absolute;
+      width: 46px;
+      height: 46px;
+      transform-style: preserve-3d;
+      transform: rotateX(-35deg) rotateY(45deg);
+    }
+    .iso-cube:nth-child(1) { left: 0; top: 10px; }
+    .iso-cube:nth-child(2) { left: 34px; top: -10px; }
+    .iso-cube:nth-child(3) { left: 68px; top: 10px; }
+    .face {
+      position: absolute;
+      width: 46px;
+      height: 46px;
+      backface-visibility: hidden;
+    }
+    .front { background: #d78124; transform: translateZ(23px); }
+    .right { background: #bf6c1f; transform: rotateY(90deg) translateZ(23px); }
+    .top { background: #ffd84d; transform: rotateX(90deg) translateZ(23px); }
+    .shadow {
+      position: absolute;
+      left: 25px;
+      bottom: 3px;
+      width: 106px;
+      height: 38px;
+      background: #d9d9d9;
+      transform: skewX(-34deg) rotate(-1deg);
+      opacity: .78;
+      animation: shadowPulse 1.45s ease-in-out infinite alternate;
+    }
+    .loader-text {
+      min-width: 260px;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 600;
+      color: #3a3f44;
+      letter-spacing: 0;
+    }
+    .loader-bar {
+      width: 260px;
+      height: 5px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #eceff1;
+    }
+    .loader-bar span {
+      display: block;
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: #f0a126;
+      transition: width .16s ease;
+    }
+    @keyframes cubeSpin {
+      0% { transform: rotateZ(-5deg) rotateY(-18deg) translateY(0); }
+      100% { transform: rotateZ(5deg) rotateY(18deg) translateY(-6px); }
+    }
+    @keyframes shadowPulse {
+      0% { transform: skewX(-34deg) rotate(-1deg) scale(.92); opacity: .58; }
+      100% { transform: skewX(-34deg) rotate(-1deg) scale(1.05); opacity: .82; }
+    }
   </style>
 </head>
 <body>
+  <div id="loader" class="loader">
+    <div class="loader-inner">
+      <div class="cube-mark" aria-hidden="true">
+        <div class="cube-row">
+          <div class="iso-cube"><div class="face front"></div><div class="face right"></div><div class="face top"></div></div>
+          <div class="iso-cube"><div class="face front"></div><div class="face right"></div><div class="face top"></div></div>
+          <div class="iso-cube"><div class="face front"></div><div class="face right"></div><div class="face top"></div></div>
+        </div>
+        <div class="shadow"></div>
+      </div>
+      <div>
+        <div id="loaderText" class="loader-text">(0KB/0KB)0%</div>
+        <div class="loader-bar"><span id="loaderBar"></span></div>
+      </div>
+    </div>
+  </div>
+
   <button id="captureButton" class="camera-button" type="button" aria-label="Save transparent PNG" title="Save transparent PNG">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7.7 6H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3.7L14.5 4Z"/><circle cx="12" cy="13" r="3.5"/></svg>
   </button>
 
   <model-viewer
     id="viewer"
-    src="steel_structure_cloud_view_lowpoly_draco.glb"
     camera-controls
     auto-rotate
     rotation-per-second="18deg"
@@ -100,10 +214,21 @@
   <div id="toast" class="toast">正在生成图片...</div>
 
   <script>
+    const MODEL_URL = 'steel_structure_cloud_view_lowpoly_draco.glb';
     const viewer = document.querySelector('#viewer');
     const button = document.querySelector('#captureButton');
     const toast = document.querySelector('#toast');
+    const loader = document.querySelector('#loader');
+    const loaderText = document.querySelector('#loaderText');
+    const loaderBar = document.querySelector('#loaderBar');
     let userInteracted = false;
+
+    const kb = (bytes) => Math.max(0, Math.round(bytes / 1024));
+    const setProgress = (loaded, total) => {
+      const percent = total > 0 ? Math.min(100, Math.round((loaded / total) * 100)) : 0;
+      loaderText.textContent = `(${kb(loaded)}KB/${total > 0 ? kb(total) : '----'}KB)${percent}%`;
+      loaderBar.style.width = `${percent}%`;
+    };
 
     const showToast = (text) => {
       toast.textContent = text;
@@ -137,6 +262,42 @@
         pbr.setMetallicFactor?.(0.92);
         pbr.setRoughnessFactor?.(0.23);
       }
+    };
+
+    const loadModelWithProgress = async () => {
+      try {
+        setProgress(0, 0);
+        const response = await fetch(MODEL_URL, { cache: 'no-store' });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const total = Number(response.headers.get('content-length')) || 0;
+        const reader = response.body?.getReader();
+        if (!reader) {
+          const blob = await response.blob();
+          setProgress(blob.size, blob.size);
+          viewer.src = URL.createObjectURL(blob);
+          return;
+        }
+        const chunks = [];
+        let loaded = 0;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value);
+          loaded += value.byteLength;
+          setProgress(loaded, total);
+        }
+        const blob = new Blob(chunks, { type: 'model/gltf-binary' });
+        setProgress(blob.size, total || blob.size);
+        viewer.src = URL.createObjectURL(blob);
+      } catch (error) {
+        console.error(error);
+        loaderText.textContent = '模型加载失败，请刷新重试';
+      }
+    };
+
+    const hideLoader = async () => {
+      await improveMaterials();
+      loader.classList.add('hidden');
     };
 
     const downloadDataUrl = (dataUrl) => {
@@ -177,7 +338,8 @@
     };
 
     button.addEventListener('click', captureTransparentPng);
-    viewer.addEventListener('load', improveMaterials);
+    viewer.addEventListener('load', hideLoader, { once: true });
+    loadModelWithProgress();
   </script>
 </body>
 </html>
