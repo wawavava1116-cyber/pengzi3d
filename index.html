@@ -110,30 +110,41 @@
       width: 54px;
       height: 54px;
       transform-origin: 50% 50%;
+      animation: rotatePulse 1.2s ease-in-out infinite;
+      animation-delay: var(--delay);
+      will-change: transform;
     }
     .loader-cube.left {
-      left: 0;
+      left: 2px;
       top: 34px;
       z-index: 2;
-      animation: cubeLeft 1.15s ease-in-out infinite;
+      --dx: -11px;
+      --dy: -8px;
+      --delay: 0s;
     }
     .loader-cube.top {
       left: 39px;
       top: 10px;
       z-index: 1;
-      animation: cubeTop 1.15s ease-in-out infinite;
+      --dx: 12px;
+      --dy: -12px;
+      --delay: .2s;
     }
     .loader-cube.right {
-      left: 78px;
+      left: 76px;
       top: 34px;
       z-index: 2;
-      animation: cubeRight 1.15s ease-in-out infinite;
+      --dx: 12px;
+      --dy: 8px;
+      --delay: .4s;
     }
     .loader-cube.bottom {
       left: 39px;
       top: 58px;
       z-index: 3;
-      animation: cubeBottom 1.15s ease-in-out infinite;
+      --dx: -12px;
+      --dy: 12px;
+      --delay: .6s;
     }
     .cube-face {
       position: absolute;
@@ -197,21 +208,10 @@
       background: #f0a126;
       transition: width .16s ease;
     }
-    @keyframes cubeLeft {
-      0%, 100% { transform: translate(0, 0); }
-      50% { transform: translate(-11px, -8px); }
-    }
-    @keyframes cubeTop {
-      0%, 100% { transform: translate(0, 0); }
-      50% { transform: translate(12px, -12px); }
-    }
-    @keyframes cubeRight {
-      0%, 100% { transform: translate(0, 0); }
-      50% { transform: translate(12px, 8px); }
-    }
-    @keyframes cubeBottom {
-      0%, 100% { transform: translate(0, 0); }
-      50% { transform: translate(-12px, 12px); }
+    @keyframes rotatePulse {
+      0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+      50% { transform: translate(var(--dx), var(--dy)) scale(1.18) rotate(180deg); }
+      100% { transform: translate(0, 0) scale(1) rotate(360deg); }
     }
     @keyframes shadowPulse {
       0% { transform: skewX(-34deg) rotate(-1deg) scale(.88); opacity: .42; }
