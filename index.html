@@ -95,45 +95,80 @@
     }
     .cube-mark {
       position: relative;
-      width: 170px;
-      height: 132px;
-      perspective: 620px;
+      width: 190px;
+      height: 150px;
     }
-    .cube-row {
+    .cube-group {
       position: absolute;
-      left: 24px;
-      top: 14px;
-      width: 122px;
-      height: 76px;
-      transform-style: preserve-3d;
-      transform-origin: 61px 38px;
+      left: 29px;
+      top: 12px;
+      width: 132px;
+      height: 104px;
     }
-    .iso-cube {
+    .loader-cube {
       position: absolute;
-      width: 46px;
-      height: 46px;
-      transform-style: preserve-3d;
-      transform: translate(0, 0) rotateX(-35deg) rotateY(45deg);
+      width: 54px;
+      height: 54px;
+      transform-origin: 50% 50%;
     }
-    .iso-cube:nth-child(1) { left: 0; top: 24px; animation: cubeMoveA 1.28s ease-in-out infinite; }
-    .iso-cube:nth-child(2) { left: 34px; top: 4px; animation: cubeMoveB 1.28s ease-in-out infinite; }
-    .iso-cube:nth-child(3) { left: 68px; top: 24px; animation: cubeMoveC 1.28s ease-in-out infinite; }
-    .iso-cube:nth-child(4) { left: 34px; top: 44px; animation: cubeMoveD 1.28s ease-in-out infinite; }
-    .face {
+    .loader-cube.left {
+      left: 0;
+      top: 34px;
+      z-index: 2;
+      animation: cubeLeft 1.15s ease-in-out infinite;
+    }
+    .loader-cube.top {
+      left: 39px;
+      top: 10px;
+      z-index: 1;
+      animation: cubeTop 1.15s ease-in-out infinite;
+    }
+    .loader-cube.right {
+      left: 78px;
+      top: 34px;
+      z-index: 2;
+      animation: cubeRight 1.15s ease-in-out infinite;
+    }
+    .loader-cube.bottom {
+      left: 39px;
+      top: 58px;
+      z-index: 3;
+      animation: cubeBottom 1.15s ease-in-out infinite;
+    }
+    .cube-face {
       position: absolute;
-      width: 46px;
-      height: 46px;
-      backface-visibility: hidden;
+      display: block;
     }
-    .front { background: #d78124; transform: translateZ(23px); }
-    .right { background: #bf6c1f; transform: rotateY(90deg) translateZ(23px); }
-    .top { background: #ffd84d; transform: rotateX(90deg) translateZ(23px); }
+    .cube-face.top {
+      left: 0;
+      top: 0;
+      width: 54px;
+      height: 31px;
+      background: #ffd84d;
+      clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    }
+    .cube-face.left {
+      left: 0;
+      top: 15px;
+      width: 27px;
+      height: 39px;
+      background: #e9a526;
+      clip-path: polygon(0 0, 100% 41%, 100% 100%, 0 59%);
+    }
+    .cube-face.right {
+      left: 27px;
+      top: 15px;
+      width: 27px;
+      height: 39px;
+      background: #c87422;
+      clip-path: polygon(0 41%, 100% 0, 100% 59%, 0 100%);
+    }
     .shadow {
       position: absolute;
-      left: 30px;
-      bottom: 2px;
-      width: 112px;
-      height: 42px;
+      left: 42px;
+      bottom: 1px;
+      width: 106px;
+      height: 38px;
       background: rgba(0,0,0,.34);
       transform: skewX(-34deg) rotate(-1deg);
       opacity: .72;
@@ -162,21 +197,21 @@
       background: #f0a126;
       transition: width .16s ease;
     }
-    @keyframes cubeMoveA {
-      0%, 100% { transform: translate(0, 0) rotateX(-35deg) rotateY(45deg); }
-      50% { transform: translate(12px, -7px) rotateX(-35deg) rotateY(45deg); }
+    @keyframes cubeLeft {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(-11px, -8px); }
     }
-    @keyframes cubeMoveB {
-      0%, 100% { transform: translate(0, 0) rotateX(-35deg) rotateY(45deg); }
-      50% { transform: translate(10px, -14px) rotateX(-35deg) rotateY(45deg); }
+    @keyframes cubeTop {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(12px, -12px); }
     }
-    @keyframes cubeMoveC {
-      0%, 100% { transform: translate(0, 0) rotateX(-35deg) rotateY(45deg); }
-      50% { transform: translate(-12px, -7px) rotateX(-35deg) rotateY(45deg); }
+    @keyframes cubeRight {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(12px, 8px); }
     }
-    @keyframes cubeMoveD {
-      0%, 100% { transform: translate(0, 0) rotateX(-35deg) rotateY(45deg); }
-      50% { transform: translate(-10px, 14px) rotateX(-35deg) rotateY(45deg); }
+    @keyframes cubeBottom {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(-12px, 12px); }
     }
     @keyframes shadowPulse {
       0% { transform: skewX(-34deg) rotate(-1deg) scale(.88); opacity: .42; }
@@ -189,11 +224,11 @@
   <div id="loader" class="loader">
     <div class="loader-inner">
       <div class="cube-mark" aria-hidden="true">
-        <div class="cube-row">
-          <div class="iso-cube"><div class="face front"></div><div class="face right"></div><div class="face top"></div></div>
-          <div class="iso-cube"><div class="face front"></div><div class="face right"></div><div class="face top"></div></div>
-          <div class="iso-cube"><div class="face front"></div><div class="face right"></div><div class="face top"></div></div>
-          <div class="iso-cube"><div class="face front"></div><div class="face right"></div><div class="face top"></div></div>
+        <div class="cube-group">
+          <div class="loader-cube left"><span class="cube-face top"></span><span class="cube-face left"></span><span class="cube-face right"></span></div>
+          <div class="loader-cube top"><span class="cube-face top"></span><span class="cube-face left"></span><span class="cube-face right"></span></div>
+          <div class="loader-cube right"><span class="cube-face top"></span><span class="cube-face left"></span><span class="cube-face right"></span></div>
+          <div class="loader-cube bottom"><span class="cube-face top"></span><span class="cube-face left"></span><span class="cube-face right"></span></div>
         </div>
         <div class="shadow"></div>
       </div>
